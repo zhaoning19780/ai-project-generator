@@ -1,5 +1,11 @@
 <script setup lang="ts">
 import BasicLayout from '@/layouts/BasicLayout.vue'
+
+import { test } from '@/api/helloController.ts'
+
+test().then((res) => {
+  console.log(res)
+})
 </script>
 
 <template>

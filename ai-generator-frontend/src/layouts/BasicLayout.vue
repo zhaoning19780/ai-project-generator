@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import GlobalHeader from './GlobalHeader.vue'
-import GlobalFooter from './GlobalFooter.vue'
-import type { MenuItem } from './GlobalHeader.vue'
+import GlobalHeader from '../components/GlobalHeader.vue'
+import GlobalFooter from '../components/GlobalFooter.vue'
+import type { MenuItem } from '../components/GlobalHeader.vue'
 
 const logo = new URL('@/assets/logo.png', import.meta.url).href
 const title = 'AI零代码应用平台'
