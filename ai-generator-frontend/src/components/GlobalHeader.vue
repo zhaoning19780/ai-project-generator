@@ -9,6 +9,12 @@ export interface MenuItem {
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+// 引入Store
+import { useLoginUserStore } from '@/stores/loginUser.ts'
+import { message } from 'ant-design-vue'
+import router from '@/router'
+import { userLogout } from '@/api/userController'
+const loginUserStore = useLoginUserStore()
 
 defineProps<{
   logo?: string
@@ -18,6 +24,21 @@ defineProps<{
 
 const route = useRoute()
 const selectedKeys = computed(() => [route.path])
+
+import { LogoutOutlined } from '@ant-design/icons-vue'
+// 用户注销
+const doLogout = async () => {
+  const res = await userLogout()
+  if (res.data.code === 0) {
+    loginUserStore.setLoginUser({
+      userName: '未登录',
+    })
+    message.success('退出登录成功')
+    await router.push('/user/login')
+  } else {
+    message.error('退出登录失败，' + res.data.message)
+  }
+}
 </script>
 
 <template>
@@ -37,7 +58,25 @@ const selectedKeys = computed(() => [route.path])
       </a-menu>
     </div>
     <div class="header-right">
-      <a-button type="primary">登录</a-button>
+      <div v-if="loginUserStore.loginUser.id">
+        <a-dropdown>
+          <a-space>
+            <a-avatar :src="loginUserStore.loginUser.userAvatar" class="user-avatar" />
+            {{ loginUserStore.loginUser.userName ?? '无名' }}
+          </a-space>
+          <template #overlay>
+            <a-menu>
+              <a-menu-item @click="doLogout">
+                <LogoutOutlined />
+                退出登录
+              </a-menu-item>
+            </a-menu>
+          </template>
+        </a-dropdown>
+      </div>
+      <div v-else>
+        <a-button type="primary">登录</a-button>
+      </div>
     </div>
   </div>
 </template>
@@ -69,36 +108,36 @@ const selectedKeys = computed(() => [route.path])
   white-space: nowrap;
 }
 
-.header-menu {
-  background: transparent;
-  border-bottom: none;
-  line-height: 64px;
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-left: 16px;
 }
 
-.header-menu .ant-menu-item {
+.nav-link {
   color: rgba(0, 0, 0, 0.65);
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition:
+    color 0.3s,
+    background-color 0.3s;
 }
 
-.header-menu .ant-menu-item:hover {
+.nav-link:hover {
   color: #1677ff;
+  background-color: rgba(22, 119, 255, 0.05);
 }
 
-.header-menu .ant-menu-item-selected {
+.nav-link-active {
   color: #1677ff !important;
   font-weight: 500;
-}
-
-.header-menu .ant-menu-item-selected a {
-  color: #1677ff;
-}
-
-.header-menu .ant-menu-item a:hover {
-  color: #1677ff;
 }
 
 .header-right {
   display: flex;
   align-items: center;
+  width: 150px;
 }
 </style>

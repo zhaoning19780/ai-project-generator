@@ -5,6 +5,11 @@ server:
 spring:
   application:
     name: ai-generator-mother-backend
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://172.28.136.119:3306/ai_code_generator?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: root
 # springdoc-openapi
 springdoc:
   swagger-ui:
