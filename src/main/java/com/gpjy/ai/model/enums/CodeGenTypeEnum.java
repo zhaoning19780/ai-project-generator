@@ -23,7 +23,7 @@ public enum CodeGenTypeEnum {
      * @param value 枚举值的value
      * @return 枚举值
      */
-    public static CodeGenTypeEnum genEnumByValue(String value){
+    public static CodeGenTypeEnum getEnumByValue(String value){
         if(ObjUtil.isEmpty(value)){
             return null;
         }
