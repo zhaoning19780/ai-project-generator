@@ -1,10 +1,10 @@
 package com.gpjy;
 
-import com.gpjy.core.AiCodeGeneratorFacade;
-import com.gpjy.core.CodeParser;
 import com.gpjy.ai.model.entity.HtmlCodeResult;
 import com.gpjy.ai.model.entity.MultiFileCodeResult;
 import com.gpjy.ai.model.enums.CodeGenTypeEnum;
+import com.gpjy.core.AiCodeGeneratorFacade;
+import com.gpjy.core.CodeParser;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -88,13 +88,18 @@ public class CodeParserTest {
 
     @Test
     void generateAndSaveCodeStream() {
-        Flux<String> codeStream = aiCodeGeneratorFacade.generateAndSaveCodeStream("生成一个登录页面。", CodeGenTypeEnum.HTML,1L);
+        Flux<String> codeStream = aiCodeGeneratorFacade.generateAndSaveCodeStream("生成一个登录页面。代码行数不超过50行。", CodeGenTypeEnum.MULTI_FILE,473726045393113088L);
         // 阻塞等待所有数据收集完成
         List<String> result = codeStream.collectList().block();
         // 验证结果
         Assertions.assertNotNull(result);
         String completeContent = String.join("", result);
         Assertions.assertNotNull(completeContent);
+    }
+
+    @Test
+    void generateAndSaveCode(){
+        aiCodeGeneratorFacade.generateAndSaveCode("生成一个登录页面。", CodeGenTypeEnum.MULTI_FILE,1L);
     }
 
 }
