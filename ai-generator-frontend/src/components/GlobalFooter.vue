@@ -1,29 +1,37 @@
-<script setup lang="ts">
-const linkUrl = 'https://github.com/zhaoning19780/ai-project-generator'
-</script>
-
 <template>
-  <div class="global-footer">
-    <a :href="linkUrl" target="_blank" rel="noopener noreferrer">
-      AI零代码应用平台
-    </a>
-  </div>
+  <a-layout-footer class="footer">
+    <div class="footer-content">
+      <p class="copyright">
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="author-link"
+        >
+          AI零代码应用生成平台
+        </a>
+      </p>
+    </div>
+  </a-layout-footer>
 </template>
 
+<script setup lang="ts">
+// 无需额外的响应式数据
+</script>
+
 <style scoped>
-.global-footer {
+.footer {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
   text-align: center;
-  padding: 0;
+  padding: 20px;
+  margin-top: 40px;
+  border-top: 1px solid rgba(102, 126, 234, 0.1);
 }
 
-.global-footer a {
-  color: rgba(0, 0, 0, 0.45);
+.copyright {
+  margin: 0;
+  color: #666;
   font-size: 14px;
-  text-decoration: none;
-  transition: color 0.3s;
-}
-
-.global-footer a:hover {
-  color: rgba(0, 0, 0, 0.85);
 }
 </style>

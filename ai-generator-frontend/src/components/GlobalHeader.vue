@@ -1,32 +1,122 @@
-<script lang="ts">
-export interface MenuItem {
-  key: string
-  label: string
-  path: string
-}
-</script>
+<template>
+  <a-layout-header class="header">
+    <a-row :wrap="false">
+      <!-- 左侧：Logo和标题 -->
+      <a-col flex="200px">
+        <RouterLink to="/">
+          <div class="header-left">
+            <img class="logo" src="@/assets/logo.png" alt="Logo" />
+            <h1 class="site-title">零代码应用生成</h1>
+          </div>
+        </RouterLink>
+      </a-col>
+      <!-- 中间：导航菜单 -->
+      <a-col flex="auto">
+        <a-menu
+          v-model:selectedKeys="selectedKeys"
+          mode="horizontal"
+          :items="menuItems"
+          @click="handleMenuClick"
+        />
+      </a-col>
+      <!-- 右侧：用户操作区域 -->
+      <a-col>
+        <div class="user-login-status">
+          <div v-if="loginUserStore.loginUser.id">
+            <a-dropdown>
+              <a-space>
+                <a-avatar :src="loginUserStore.loginUser.userAvatar" />
+                {{ loginUserStore.loginUser.userName ?? '无名' }}
+              </a-space>
+              <template #overlay>
+                <a-menu>
+                  <a-menu-item @click="doLogout">
+                    <LogoutOutlined />
+                    退出登录
+                  </a-menu-item>
+                </a-menu>
+              </template>
+            </a-dropdown>
+          </div>
+          <div v-else>
+            <a-button type="primary" href="/user/login">登录</a-button>
+          </div>
+        </div>
+      </a-col>
+    </a-row>
+  </a-layout-header>
+</template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-// 引入Store
+import { computed, h, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { type MenuProps, message } from 'ant-design-vue'
 import { useLoginUserStore } from '@/stores/loginUser.ts'
-import { message } from 'ant-design-vue'
-import router from '@/router'
-import { userLogout } from '@/api/userController'
+import { userLogout } from '@/api/userController.ts'
+import { LogoutOutlined, HomeOutlined } from '@ant-design/icons-vue'
+
 const loginUserStore = useLoginUserStore()
+const router = useRouter()
+// 当前选中菜单
+const selectedKeys = ref<string[]>(['/'])
+// 监听路由变化，更新当前选中菜单
+router.afterEach((to, from, next) => {
+  selectedKeys.value = [to.path]
+})
 
-defineProps<{
-  logo?: string
-  title?: string
-  menuItems?: MenuItem[]
-}>()
+// 菜单配置项
+const originItems = [
+  {
+    key: '/',
+    icon: () => h(HomeOutlined),
+    label: '主页',
+    title: '主页',
+  },
+  {
+    key: '/admin/userManage',
+    label: '用户管理',
+    title: '用户管理',
+  },
+  {
+    key: '/admin/appManage',
+    label: '应用管理',
+    title: '应用管理',
+  },
+  {
+    key: 'others',
+    label: h('a', { href: 'https://www.codefather.cn', target: '_blank' }, '编程导航'),
+    title: '编程导航',
+  },
+]
 
-const route = useRoute()
-const selectedKeys = computed(() => [route.path])
+// 过滤菜单项
+const filterMenus = (menus = [] as MenuProps['items']) => {
+  return menus?.filter((menu) => {
+    const menuKey = menu?.key as string
+    if (menuKey?.startsWith('/admin')) {
+      const loginUser = loginUserStore.loginUser
+      if (!loginUser || loginUser.userRole !== 'admin') {
+        return false
+      }
+    }
+    return true
+  })
+}
 
-import { LogoutOutlined } from '@ant-design/icons-vue'
-// 用户注销
+// 展示在菜单的路由数组
+const menuItems = computed<MenuProps['items']>(() => filterMenus(originItems))
+
+// 处理菜单点击
+const handleMenuClick: MenuProps['onClick'] = (e) => {
+  const key = e.key as string
+  selectedKeys.value = [key]
+  // 跳转到对应页面
+  if (key.startsWith('/')) {
+    router.push(key)
+  }
+}
+
+// 退出登录
 const doLogout = async () => {
   const res = await userLogout()
   if (res.data.code === 0) {
@@ -41,103 +131,30 @@ const doLogout = async () => {
 }
 </script>
 
-<template>
-  <div class="global-header">
-    <div class="header-left">
-      <img v-if="logo" :src="logo" alt="logo" class="logo" />
-      <span v-if="title" class="title">{{ title }}</span>
-      <a-menu
-        v-if="menuItems && menuItems.length > 0"
-        mode="horizontal"
-        :selected-keys="selectedKeys"
-        class="header-menu"
-      >
-        <a-menu-item v-for="item in menuItems" :key="item.key">
-          <router-link :to="item.path">{{ item.label }}</router-link>
-        </a-menu-item>
-      </a-menu>
-    </div>
-    <div class="header-right">
-      <div v-if="loginUserStore.loginUser.id">
-        <a-dropdown>
-          <a-space>
-            <a-avatar :src="loginUserStore.loginUser.userAvatar" class="user-avatar" />
-            {{ loginUserStore.loginUser.userName ?? '无名' }}
-          </a-space>
-          <template #overlay>
-            <a-menu>
-              <a-menu-item @click="doLogout">
-                <LogoutOutlined />
-                退出登录
-              </a-menu-item>
-            </a-menu>
-          </template>
-        </a-dropdown>
-      </div>
-      <div v-else>
-        <a-button type="primary">登录</a-button>
-      </div>
-    </div>
-  </div>
-</template>
-
 <style scoped>
-.global-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 100%;
+.header {
+  background: #fff;
   padding: 0 24px;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .logo {
-  height: 36px;
-  width: auto;
+  height: 48px;
+  width: 48px;
 }
 
-.title {
+.site-title {
+  margin: 0;
   font-size: 18px;
-  font-weight: 600;
-  color: rgba(0, 0, 0, 0.85);
-  white-space: nowrap;
+  color: #1890ff;
 }
 
-.header-nav {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: 16px;
-}
-
-.nav-link {
-  color: rgba(0, 0, 0, 0.65);
-  text-decoration: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  transition:
-    color 0.3s,
-    background-color 0.3s;
-}
-
-.nav-link:hover {
-  color: #1677ff;
-  background-color: rgba(22, 119, 255, 0.05);
-}
-
-.nav-link-active {
-  color: #1677ff !important;
-  font-weight: 500;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  width: 150px;
+.ant-menu-horizontal {
+  border-bottom: none !important;
 }
 </style>

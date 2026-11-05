@@ -1,33 +1,6 @@
-<script setup lang="ts">
-import { reactive } from 'vue'
-import { message } from 'ant-design-vue'
-import { useRouter } from 'vue-router'
-import { userRegister } from '@/api/userController'
-
-const router = useRouter()
-
-const formState = reactive<API.UserRegisterRequest>({
-  userAccount: '',
-  userPassword: '',
-  checkPassword: '',
-})
-
-const handleSubmit = async (values: any) => {
-  const res = await userRegister(values)
-  if (res.data.code === 0) {
-    message.success('注册成功')
-    router.push({
-      path: '/user/login',
-      replace: true,
-    })
-  } else {
-    message.error('注册失败，' + res.data.message)
-  }
-}
-</script>
 <template>
   <div id="userRegisterPage">
-    <h2 class="title">AI 零代码应用生成 - 用户注册</h2>
+    <h2 class="title">AI 应用生成 - 用户注册</h2>
     <div class="desc">不写一行代码，生成完整应用</div>
     <a-form :model="formState" name="basic" autocomplete="off" @finish="handleSubmit">
       <a-form-item name="userAccount" :rules="[{ required: true, message: '请输入账号' }]">
@@ -45,11 +18,12 @@ const handleSubmit = async (values: any) => {
       <a-form-item
         name="checkPassword"
         :rules="[
-          { required: true, message: '请再次输入密码' },
+          { required: true, message: '请确认密码' },
           { min: 8, message: '密码不能小于 8 位' },
+          { validator: validateCheckPassword },
         ]"
       >
-        <a-input-password v-model:value="formState.checkPassword" placeholder="请再次输入密码" />
+        <a-input-password v-model:value="formState.checkPassword" placeholder="请确认密码" />
       </a-form-item>
       <div class="tips">
         已有账号？
@@ -61,10 +35,60 @@ const handleSubmit = async (values: any) => {
     </a-form>
   </div>
 </template>
-<style>
+
+<script setup lang="ts">
+import { useRouter } from 'vue-router'
+import { userRegister } from '@/api/userController.ts'
+import { message } from 'ant-design-vue'
+import { reactive } from 'vue'
+
+const router = useRouter()
+
+const formState = reactive<API.UserRegisterRequest>({
+  userAccount: '',
+  userPassword: '',
+  checkPassword: '',
+})
+
+/**
+ * 验证确认密码
+ * @param rule
+ * @param value
+ * @param callback
+ */
+const validateCheckPassword = (rule: unknown, value: string, callback: (error?: Error) => void) => {
+  if (value && value !== formState.userPassword) {
+    callback(new Error('两次输入密码不一致'))
+  } else {
+    callback()
+  }
+}
+
+/**
+ * 提交表单
+ * @param values
+ */
+const handleSubmit = async (values: API.UserRegisterRequest) => {
+  const res = await userRegister(values)
+  // 注册成功，跳转到登录页面
+  if (res.data.code === 0) {
+    message.success('注册成功')
+    router.push({
+      path: '/user/login',
+      replace: true,
+    })
+  } else {
+    message.error('注册失败，' + res.data.message)
+  }
+}
+</script>
+
+<style scoped>
 #userRegisterPage {
-  max-width: 360px;
-  margin: 0 auto;
+  background: white;
+  max-width: 720px;
+  padding: 24px;
+  margin: 24px auto;
 }
 
 .title {

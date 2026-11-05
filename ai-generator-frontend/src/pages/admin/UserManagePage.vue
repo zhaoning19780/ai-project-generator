@@ -14,46 +14,40 @@
     </a-form>
     <a-divider />
     <!-- 表格 -->
+    <a-table
+      :columns="columns"
+      :data-source="data"
+      :pagination="pagination"
+      @change="doTableChange"
+    >
+      <template #bodyCell="{ column, record }">
+        <template v-if="column.dataIndex === 'userAvatar'">
+          <a-image :src="record.userAvatar" :width="120" />
+        </template>
+        <template v-else-if="column.dataIndex === 'userRole'">
+          <div v-if="record.userRole === 'admin'">
+            <a-tag color="green">管理员</a-tag>
+          </div>
+          <div v-else>
+            <a-tag color="blue">普通用户</a-tag>
+          </div>
+        </template>
+        <template v-else-if="column.dataIndex === 'createTime'">
+          {{ dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') }}
+        </template>
+        <template v-else-if="column.key === 'action'">
+          <a-button danger @click="doDelete(record.id)">删除</a-button>
+        </template>
+      </template>
+    </a-table>
   </div>
-  <a-table :columns="columns" :data-source="data" :pagination="pagination" @change="doTableChange">
-    <template #headerCell="{ column }">
-      <template v-if="column.key === 'name'">
-        <span>
-          <smile-outlined />
-          Name
-        </span>
-      </template>
-    </template>
-
-    <template #bodyCell="{ column, record }">
-      <template v-if="column.dataIndex === 'userAvatar'">
-        <a-image :src="record.userAvatar" :width="120" />
-      </template>
-      <template v-else-if="column.dataIndex === 'userRole'">
-        <div v-if="record.userRole === 'admin'">
-          <a-tag color="green">管理员</a-tag>
-        </div>
-        <div v-else>
-          <a-tag color="blue">普通用户</a-tag>
-        </div>
-      </template>
-      <template v-else-if="column.dataIndex === 'createTime'">
-        {{ dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') }}
-      </template>
-      <template v-else-if="column.key === 'action'">
-        <a-button danger @click="doDelete(record.id)">删除</a-button>
-      </template>
-    </template>
-  </a-table>
 </template>
 <script lang="ts" setup>
-import { deleteUser, listUserVoByPage } from '@/api/userController'
-import { SmileOutlined, DownOutlined } from '@ant-design/icons-vue'
-import { message } from 'ant-design-vue'
 import { computed, onMounted, reactive, ref } from 'vue'
+import { deleteUser, listUserVoByPage } from '@/api/userController.ts'
+import { message } from 'ant-design-vue'
 import dayjs from 'dayjs'
 
-// 表格列
 const columns = [
   {
     title: 'id',
@@ -89,7 +83,7 @@ const columns = [
   },
 ]
 
-// 从后端获取数据
+// 展示的数据
 const data = ref<API.UserVO[]>([])
 const total = ref(0)
 
@@ -98,6 +92,8 @@ const searchParams = reactive<API.UserQueryRequest>({
   pageNum: 1,
   pageSize: 10,
 })
+
+// 获取数据
 const fetchData = async () => {
   const res = await listUserVoByPage({
     ...searchParams,
@@ -109,10 +105,6 @@ const fetchData = async () => {
     message.error('获取数据失败，' + res.data.message)
   }
 }
-// 页面加载时请求一次
-onMounted(() => {
-  fetchData()
-})
 
 // 分页参数
 const pagination = computed(() => {
@@ -125,14 +117,14 @@ const pagination = computed(() => {
   }
 })
 
-// 表格变化处理
-const doTableChange = (page: any) => {
+// 表格分页变化时的操作
+const doTableChange = (page: { current: number; pageSize: number }) => {
   searchParams.pageNum = page.current
   searchParams.pageSize = page.pageSize
   fetchData()
 }
 
-// 获取数据
+// 搜索数据
 const doSearch = () => {
   // 重置页码
   searchParams.pageNum = 1
@@ -153,4 +145,17 @@ const doDelete = async (id: string) => {
     message.error('删除失败')
   }
 }
+
+// 页面加载时请求一次
+onMounted(() => {
+  fetchData()
+})
 </script>
+
+<style scoped>
+#userManagePage {
+  padding: 24px;
+  background: white;
+  margin-top: 16px;
+}
+</style>
