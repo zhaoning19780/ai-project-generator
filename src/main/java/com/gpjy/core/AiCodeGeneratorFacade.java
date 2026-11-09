@@ -4,6 +4,7 @@ import com.gpjy.ai.AiCodeGeneratorService;
 import com.gpjy.ai.model.entity.HtmlCodeResult;
 import com.gpjy.ai.model.entity.MultiFileCodeResult;
 import com.gpjy.ai.model.enums.CodeGenTypeEnum;
+import com.gpjy.config.AiCodeGeneratorServiceFactory;
 import com.gpjy.core.parser.CodeParserExecutor;
 import com.gpjy.core.saver.CodeFileSaverExecutor;
 import com.gpjy.exception.BusinessException;
@@ -28,7 +29,7 @@ import java.io.File;
 public class AiCodeGeneratorFacade {
 
     @Resource
-    private AiCodeGeneratorService aiCodeGeneratorService;
+    private AiCodeGeneratorServiceFactory aiCodeGeneratorServiceFactory;
 
     /**
      * 统一入口：根据类型生成并保存代码
@@ -38,6 +39,7 @@ public class AiCodeGeneratorFacade {
      * @return 保存的目录
      */
     public File generateAndSaveCode(String userMessage, CodeGenTypeEnum codeGenTypeEnum,Long appId) {
+        AiCodeGeneratorService aiCodeGeneratorService = aiCodeGeneratorServiceFactory.getAiCodeGeneratorService(appId);
         if (codeGenTypeEnum == null) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "生成类型为空");
         }
@@ -64,6 +66,7 @@ public class AiCodeGeneratorFacade {
      * @param codeGenTypeEnum 生成类型
      */
     public Flux<String> generateAndSaveCodeStream(String userMessage, CodeGenTypeEnum codeGenTypeEnum,Long appId) {
+        AiCodeGeneratorService aiCodeGeneratorService = aiCodeGeneratorServiceFactory.getAiCodeGeneratorService(appId);
         if (codeGenTypeEnum == null) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "生成类型为空");
         }
