@@ -1,5 +1,6 @@
 package com.gpjy.service;
 
+import com.gpjy.model.dto.app.AppAddRequest;
 import com.gpjy.model.dto.app.AppQueryRequest;
 import com.gpjy.model.entity.App;
 import com.gpjy.model.entity.User;
@@ -28,4 +29,6 @@ public interface AppService extends IService<App> {
     String deployApp(Long appId,User loginUser);
 
     void generateAppScreenshotAsync(Long appId, String appUrl);
+
+    Long createApp(AppAddRequest appAddRequest,User loginUser);
 }
